@@ -46,24 +46,24 @@ trap cleanup EXIT
 [ -f "$COMMANDS_FILE" ] || fail "1_12/commands not found"
 pass "1_12/Dockerfile and 1_12/commands exist"
 
-grep -qE '^\s*FROM\s+ubuntu(:|$|@)' "$DOCKERFILE" \
-  || fail "Dockerfile does not start FROM ubuntu"
+grep -qE '^\s*FROM\s+ubuntu(:|$|@)' "$DOCKERFILE" ||
+  fail "Dockerfile does not start FROM ubuntu"
 pass "Dockerfile is based on ubuntu"
 
 # Sanity check that the project's own source files are untouched -- the
 # exercise explicitly says not to alter them.
 [ -f "$TARGET_DIR/package.json" ] || fail "1_12/package.json is missing -- has the project source been altered/removed?"
-grep -q '"name": "example-frontend"' "$TARGET_DIR/package.json" \
-  || fail "1_12/package.json does not look like the original example-frontend project"
+grep -q '"name": "example-frontend"' "$TARGET_DIR/package.json" ||
+  fail "1_12/package.json does not look like the original example-frontend project"
 pass "example-frontend project source is present in 1_12/"
 
-grep -qE 'docker\s+build' "$COMMANDS_FILE" \
-  || fail "1_12/commands does not contain a docker build command"
+grep -qE 'docker\s+build' "$COMMANDS_FILE" ||
+  fail "1_12/commands does not contain a docker build command"
 BUILD_LINE="$(grep -E 'docker\s+build' "$COMMANDS_FILE" | head -1)"
 pass "1_12/commands documents a docker build command"
 
-grep -qE 'docker\s+run' "$COMMANDS_FILE" \
-  || fail "1_12/commands does not contain a docker run command"
+grep -qE 'docker\s+run' "$COMMANDS_FILE" ||
+  fail "1_12/commands does not contain a docker run command"
 RUN_LINE="$(grep -E 'docker\s+run' "$COMMANDS_FILE" | head -1)"
 pass "1_12/commands documents a docker run command"
 
@@ -80,8 +80,7 @@ for candidate in \
   "$TARGET_DIR/$BUILD_CONTEXT_RAW" \
   "$REPO_ROOT/$BUILD_CONTEXT_RAW" \
   "$(dirname "$REPO_ROOT")/$BUILD_CONTEXT_RAW" \
-  "$BUILD_CONTEXT_RAW"
-do
+  "$BUILD_CONTEXT_RAW"; do
   if [ -d "$candidate" ]; then
     BUILD_CONTEXT="$candidate"
     break
@@ -110,17 +109,17 @@ DOCKERFILE_PORT="$(grep -oE '"-l"[[:space:]]*,[[:space:]]*"[0-9]+"' "$DOCKERFILE
 [ -n "$DOCKERFILE_PORT" ] || DOCKERFILE_PORT="$(grep -oE '\-l[[:space:]]+[0-9]+' "$DOCKERFILE" | grep -oE '[0-9]+' | tail -1)"
 [ -n "$DOCKERFILE_PORT" ] || fail "could not determine the port 1_12/Dockerfile's CMD serves on (expected a \"serve -l <port>\" argument)"
 
-[ "$RUN_CONTAINER_PORT" = "$DOCKERFILE_PORT" ] \
-  || fail "port mismatch: 1_12/commands' docker run publishes container port $RUN_CONTAINER_PORT, but 1_12/Dockerfile serves on port $DOCKERFILE_PORT"
+[ "$RUN_CONTAINER_PORT" = "$DOCKERFILE_PORT" ] ||
+  fail "port mismatch: 1_12/commands' docker run publishes container port $RUN_CONTAINER_PORT, but 1_12/Dockerfile serves on port $DOCKERFILE_PORT"
 pass "1_12/commands and 1_12/Dockerfile agree the app serves on port $DOCKERFILE_PORT"
 
 echo "Building the frontend image -- this involves an npm install/build and may take a while..."
-docker build -t "$BUILD_IMAGE" -f "$DOCKERFILE" "$BUILD_CONTEXT" >/dev/null 2>&1 \
-  || fail "docker build failed for 1_12/Dockerfile with context $BUILD_CONTEXT"
+docker build -t "$BUILD_IMAGE" -f "$DOCKERFILE" "$BUILD_CONTEXT" >/dev/null 2>&1 ||
+  fail "docker build failed for 1_12/Dockerfile with context $BUILD_CONTEXT"
 pass "$BUILD_IMAGE image builds"
 
-docker run -d --name "$CONTAINER" -p "$HOST_PORT:$RUN_CONTAINER_PORT" "$BUILD_IMAGE" >/dev/null 2>&1 \
-  || fail "docker run failed for $BUILD_IMAGE, publishing port $HOST_PORT"
+docker run -d --name "$CONTAINER" -p "$HOST_PORT:$RUN_CONTAINER_PORT" "$BUILD_IMAGE" >/dev/null 2>&1 ||
+  fail "docker run failed for $BUILD_IMAGE, publishing port $HOST_PORT"
 pass "$BUILD_IMAGE container started, publishing port $HOST_PORT"
 
 wait_for_log() {
@@ -130,8 +129,8 @@ wait_for_log() {
   done
   return 1
 }
-wait_for_log \
-  || fail "container never logged \"Accepting connections\" (check docker logs $CONTAINER)"
+wait_for_log ||
+  fail "container never logged \"Accepting connections\" (check docker logs $CONTAINER)"
 pass "container logged \"Accepting connections ...\""
 
 # The page is a client-side rendered React app -- a real browser is needed
@@ -154,14 +153,14 @@ if [ "$NODE_MAJOR" -lt 20 ] && [ -s "$HOME/.nvm/nvm.sh" ]; then
 fi
 command -v node >/dev/null 2>&1 || fail "node is required to run the browser check in tests/playwright"
 
-(cd "$PLAYWRIGHT_DIR" && npm install --no-audit --no-fund >/dev/null 2>&1) \
-  || fail "npm install failed in tests/playwright"
-(cd "$PLAYWRIGHT_DIR" && npx --yes playwright install --with-deps chromium >/dev/null 2>&1) \
-  || fail "playwright chromium install failed"
+(cd "$PLAYWRIGHT_DIR" && npm install --no-audit --no-fund >/dev/null 2>&1) ||
+  fail "npm install failed in tests/playwright"
+(cd "$PLAYWRIGHT_DIR" && npx --yes playwright install --with-deps chromium >/dev/null 2>&1) ||
+  fail "playwright chromium install failed"
 
 node "$PLAYWRIGHT_DIR/check-page-text.mjs" "http://localhost:$HOST_PORT" \
-  "Congratulations! You configured your ports correctly!" \
-  || fail "the frontend did not show the expected \"Congratulations!...\" message for exercise 1.12"
+  "Congratulations! You configured your ports correctly!" ||
+  fail "the frontend did not show the expected \"Congratulations!...\" message for exercise 1.12"
 pass "frontend shows exercise 1.12's success message in the browser"
 
 echo "All tests passed"

@@ -43,8 +43,8 @@ trap cleanup EXIT
 [ -f "$COMMANDS_FILE" ] || fail "1_09/commands not found"
 pass "1_09/commands exists"
 
-grep -qE 'docker\s+run' "$COMMANDS_FILE" \
-  || fail "1_09/commands does not contain a docker run command"
+grep -qE 'docker\s+run' "$COMMANDS_FILE" ||
+  fail "1_09/commands does not contain a docker run command"
 RUN_LINE="$(grep -E 'docker\s+run' "$COMMANDS_FILE" | head -1)"
 pass "1_09/commands documents a docker run command"
 
@@ -54,8 +54,8 @@ pass "1_09/commands documents a docker run command"
 IMAGE_REF="$(echo "$RUN_LINE" | grep -oE 'devopsdockeruh/simple-web-service[^[:space:]]*')"
 [ -n "$IMAGE_REF" ] || fail "1_09/commands' docker run command does not reference devopsdockeruh/simple-web-service"
 AFTER_IMAGE="$(echo "$RUN_LINE" | sed -E "s#.*${IMAGE_REF}##")"
-echo "$AFTER_IMAGE" | grep -qE '[A-Za-z0-9]' \
-  && fail "docker run command passes an extra argument/command after the image ($AFTER_IMAGE) -- exercise 1.9 relies on the image's default logging behaviour"
+echo "$AFTER_IMAGE" | grep -qE '[A-Za-z0-9]' &&
+  fail "docker run command passes an extra argument/command after the image ($AFTER_IMAGE) -- exercise 1.9 relies on the image's default logging behaviour"
 pass "docker run command gives the image no extra argument (uses its default logging behaviour)"
 
 # Read the bind mount out of -v/--volume or --mount, in whichever form was
@@ -74,15 +74,15 @@ else
   MOUNT_HOST="$(echo "$VOL_ARG" | awk -F: '{print $1}')"
   MOUNT_CONTAINER="$(echo "$VOL_ARG" | awk -F: '{print $2}')"
 fi
-[ -n "$MOUNT_HOST" ] && [ -n "$MOUNT_CONTAINER" ] \
-  || fail "could not parse the host:container paths out of 1_09/commands' bind mount"
+[ -n "$MOUNT_HOST" ] && [ -n "$MOUNT_CONTAINER" ] ||
+  fail "could not parse the host:container paths out of 1_09/commands' bind mount"
 
-echo "$MOUNT_HOST" | grep -qE '(^|/)service\.log$' \
-  || fail "bind mount's host side (\"$MOUNT_HOST\") is not named service.log"
+echo "$MOUNT_HOST" | grep -qE '(^|/)service\.log$' ||
+  fail "bind mount's host side (\"$MOUNT_HOST\") is not named service.log"
 pass "bind mount's host side is named service.log"
 
-echo "$MOUNT_CONTAINER" | grep -qE '^/usr/src/app/text\.log$' \
-  || fail "bind mount's container side (\"$MOUNT_CONTAINER\") is not /usr/src/app/text.log"
+echo "$MOUNT_CONTAINER" | grep -qE '^/usr/src/app/text\.log$' ||
+  fail "bind mount's container side (\"$MOUNT_CONTAINER\") is not /usr/src/app/text.log"
 pass "bind mount's container side is /usr/src/app/text.log"
 
 # Exercise the actual commands from 1_09/, since the exercise says the file
@@ -99,8 +99,8 @@ PRE_EXISTING_CONTENT="$(cat "$LOG_FILE")"
 
 docker run -d --name "$CONTAINER" \
   -v "$LOG_FILE:/usr/src/app/text.log" \
-  devopsdockeruh/simple-web-service >/dev/null 2>&1 \
-  || fail "docker run failed to start the container with the bind mount"
+  devopsdockeruh/simple-web-service >/dev/null 2>&1 ||
+  fail "docker run failed to start the container with the bind mount"
 pass "container started with service.log bind-mounted to /usr/src/app/text.log"
 
 wait_for_new_content() {
@@ -112,17 +112,17 @@ wait_for_new_content() {
   done
   return 1
 }
-wait_for_new_content \
-  || fail "service.log never received new content from the container"
+wait_for_new_content ||
+  fail "service.log never received new content from the container"
 pass "service.log received new content written by the container"
 
-grep -qE '[0-9]{4}-[0-9]{2}-[0-9]{2}' "$LOG_FILE" \
-  || fail "service.log's new content does not look like the expected timestamps"
+grep -qE '[0-9]{4}-[0-9]{2}-[0-9]{2}' "$LOG_FILE" ||
+  fail "service.log's new content does not look like the expected timestamps"
 pass "service.log contains the expected timestamp lines"
 
 if [ -n "$PRE_EXISTING_CONTENT" ]; then
-  grep -qF "$PRE_EXISTING_CONTENT" "$LOG_FILE" \
-    || fail "pre-existing content in service.log was overwritten instead of appended to"
+  grep -qF "$PRE_EXISTING_CONTENT" "$LOG_FILE" ||
+    fail "pre-existing content in service.log was overwritten instead of appended to"
   pass "pre-existing content in service.log was preserved, not overwritten"
 fi
 
