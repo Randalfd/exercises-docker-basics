@@ -17,7 +17,6 @@ RUN npm install
 COPY . .
 RUN npm run build
 RUN npm install -g serve 
-RUN 
 
 ENV REACT_APP_BACKEND_URL="http://example.com npm run build"
 
