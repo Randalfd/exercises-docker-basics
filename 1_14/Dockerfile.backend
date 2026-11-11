@@ -6,12 +6,13 @@ WORKDIR /usr/src/app
 COPY 1_13 .
 EXPOSE 8080
 
+ENV REQUEST_ORIGIN=http://localhost:5001
+
 RUN go version
 RUN go build
 
 RUN go test ./
 
 ENV PORT=8080
-ENV REQUEST_ORIGIN=http://localhost:5001
 
 CMD ["./server"]

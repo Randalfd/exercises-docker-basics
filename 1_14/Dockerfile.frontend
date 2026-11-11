@@ -6,6 +6,8 @@ COPY 1_12 .
 
 EXPOSE 5001
 
+ENV REACT_APP_BACKEND_URL=http://localhost:8080
+
 RUN apt-get update
 RUN apt-get install -y curl ca-certificates
 
@@ -19,6 +21,5 @@ RUN npm install
 RUN npm run build
 RUN npm install -g serve 
 
-ENV REACT_APP_BACKEND_URL=http://localhost:8080
 
 CMD ["serve", "-s", "-l", "5001", "build"]
