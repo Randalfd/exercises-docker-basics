@@ -1,0 +1,20 @@
+{
+  "name": "astro-vercel-deploy-test",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Aplicación Astro de una sola página para probar un deploy en Vercel.",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "astro": "5.18.2"
+  }
+}
